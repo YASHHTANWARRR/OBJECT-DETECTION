@@ -55,6 +55,12 @@ model = YOLO('yolov8m.pt')
 result  = results[0]
 box = result.boxes[0]
 
+for result in results :
+    boxes = result.boxes
+    masks = result.masks
+    probs = result.prob
+
+
 
 
 
