@@ -10,30 +10,45 @@ import cv2
 from picamera2 import Picamera2
 from ultralytics import YOLO
 
-#CONFIURATION
-csv_file = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)'
-images_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main'
+# === CONFIGURATION ===
+csv_file = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)/labels_train.csv'
+images_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)'  # Path to your images directory
 output_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT'
 epochs = 50
 batch_size = 8
 imgsz = 640
 
-
-# ==== STEP 1: Convert CSV to YOLO format ====
+# === STEP 1: Convert CSV to YOLO format ===
 print("📦 Converting CSV to YOLO format...")
 
 df = pd.read_csv(csv_file)
-class_names = df['class_name'].unique().tolist()
-class_dict = {name: idx for idx, name in enumerate(class_names)}
-df['class_id'] = df['class_name'].map(class_dict)
 
+# Check the columns to verify 'filename' or other similar column exists
+print("Columns in CSV file:", df.columns)
+
+# Add the 'filename' column based on 'frame'
+df['filename'] = df['frame'].apply(lambda x: f"{x}.jpg")  # Assuming images are named with 'frame' value and '.jpg' extension
+
+# Check if 'class_id' exists
+if 'class_id' not in df.columns:
+    print("❌ CSV must contain a 'class_id' column.")
+    exit()
+
+# Map class ids to class names if necessary
+class_names = df['class_id'].unique().tolist()
+class_dict = {idx: name for idx, name in enumerate(class_names)}
+df['class_id'] = df['class_id'].map(class_dict)
+
+# Split into train and validation sets
 train_imgs, val_imgs = train_test_split(df['filename'].unique(), test_size=0.2, random_state=42)
 df['split'] = df['filename'].apply(lambda x: 'train' if x in train_imgs else 'val')
 
+# Create output directories
 for split in ['train', 'val']:
     os.makedirs(os.path.join(output_dir, 'images', split), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'labels', split), exist_ok=True)
 
+# Process each image and its labels
 for filename in tqdm(df['filename'].unique(), desc="Processing images"):
     sub_df = df[df['filename'] == filename]
     split = sub_df['split'].values[0]
@@ -43,7 +58,7 @@ for filename in tqdm(df['filename'].unique(), desc="Processing images"):
         with Image.open(image_path) as img:
             img_w, img_h = img.size
     except FileNotFoundError:
-        print(f"Image not found: {filename}")
+        print(f"⚠️ Image not found: {filename}")
         continue
 
     label_lines = []
@@ -56,12 +71,15 @@ for filename in tqdm(df['filename'].unique(), desc="Processing images"):
         height = (ymax - ymin) / img_h
         label_lines.append(f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}")
 
+    # Save label file
     label_path = os.path.join(output_dir, 'labels', split, os.path.splitext(filename)[0] + '.txt')
     with open(label_path, 'w') as f:
         f.write('\n'.join(label_lines))
 
+    # Copy image file to output directory
     shutil.copy(image_path, os.path.join(output_dir, 'images', split, filename))
 
+# Create YAML file for YOLOv8 training
 yaml_dict = {
     'train': os.path.abspath(os.path.join(output_dir, 'images', 'train')),
     'val': os.path.abspath(os.path.join(output_dir, 'images', 'val')),
@@ -75,17 +93,17 @@ with open(yaml_path, 'w') as f:
 
 print("✅ CSV converted. YOLO dataset ready.")
 print("Class mapping:", class_dict)
-print(f"YAML: {yaml_path}")
+print(f"YAML saved to: {yaml_path}")
 
-# ==== STEP 2: Train the model ====
+# === STEP 2: Train the model ===
 print("🚀 Starting training...")
-model = YOLO('yolov8n.pt')  # Use yolov8s.pt or yolov8m.pt if needed
+model = YOLO('yolov8n.pt')  # Replace with yolov8s.pt or yolov8m.pt if desired
 model.train(data=yaml_path, epochs=epochs, imgsz=imgsz, batch=batch_size)
-print("✅ Training done.")
+print("✅ Training complete.")
 
-# ==== STEP 3: Real-time detection from PiCamera ====
-best_model_path = 'runs/detect/train/weights/best.pt'
-print(f"🎯 Loading trained model: {best_model_path}")
+# === STEP 3: Real-time detection from PiCamera ===
+best_model_path = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT'
+print(f"🎯 Loading trained model from: {best_model_path}")
 trained_model = YOLO(best_model_path)
 
 print("🎥 Starting PiCamera detection... Press 'q' to quit.")
