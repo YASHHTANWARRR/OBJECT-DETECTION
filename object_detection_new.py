@@ -10,14 +10,14 @@ import cv2
 from picamera2 import Picamera2
 from ultralytics import YOLO
 
-# ==== CONFIG ====
-csv_file = '/path/to/annotations.csv'
-images_dir = '/path/to/images'
-output_dir = '/path/to/yolo_dataset'
+#CONFIURATION
+csv_file = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)'
+images_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main'
+output_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT'
 epochs = 50
 batch_size = 8
 imgsz = 640
-# ================
+
 
 # ==== STEP 1: Convert CSV to YOLO format ====
 print("📦 Converting CSV to YOLO format...")
