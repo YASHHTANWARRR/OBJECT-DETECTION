@@ -1,169 +1,68 @@
-#libraries 
-import numpy as np 
-import pandas as pd 
+import numpy as np
 import cv2
-import matplotlib.pyplot as plt 
-import sklearn
-import PIL
-import os 
-import pathlib
-
-
-from sklearn.utils import shuffle
-from matplotlib.patches import Rectangle
-import warnings
+from picamera2 import Picamera2
 from ultralytics import YOLO
-from PIL import Image
-from IPython.display import display
+from matplotlib import pyplot as plt
+import time
+import os
+import yaml
 
-warnings.simplefilter('ignore')
+# Step 1: Configure the PiCamera
+picam2 = Picamera2()
+picam2.configure(picam2.create_still_configuration())
 
-#dataset ready
-df = pd.read_csv('/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)')
-df = shuffle(df)
-df.head 
+# Step 2: Initialize the YOLO model (YOLOv8 pre-trained model or custom model)
+model = YOLO('yolov8m.pt')  # Using a pre-trained YOLOv8 model, can be replaced with a custom-trained model.
 
-classes = df.classes_id_unique()
-print (classes)
+# Step 3: Prepare for training
 
-labels = { 1 : 'car',2 : 'truck' , 3 : 'person' , 4 : 'bicycle' , 5 : 'traffic light'}
+# Define the path to the dataset's YAML configuration file
+train_data_path = "/path/to/your/data.yaml"  # Adjust this path to your dataset's data.yaml file.
+epochs = 50  # Number of epochs for training
+imgsz = 640  # Image size for training
+batch_size = 8  # Batch size for training
 
-#labels and boxes the detection 
+# Step 4: Train the model (This part trains the model on the dataset provided in the YAML file)
+# Make sure the data.yaml file contains correct paths and labels for training
+model.train(data=train_data_path, epochs=epochs, imgsz=imgsz, batch=batch_size)
 
-boxes = {}
-labels = {}
+# Step 5: Load the trained model (this is the trained model after the training phase)
+# After training, YOLOv8 saves the best model weights by default.
+trained_model = YOLO('runs/detect/train/weights/best.pt')  # Adjust the path if necessary based on your output
 
-base_path =' /home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)'
+# Step 6: Start the camera preview and wait for the camera to warm up
+picam2.start()
 
-for classes_id in classes:
-    first_row = df[df['classes_id'] == classes_id].iloc[0]
+# Step 7: Process the camera stream for real-time object detection
+while True:
+    start_time = time.time()
 
-    images[classes_id] = cv2.imread[base_path +first_row['frame']]
-    boxes[classes_id] = [first_row['xmin'],first_row['xmax'],first_row['ymin'],first_row['ymax']]
+    # Capture a frame from the Pi Camera
+    frame = picam2.capture_array()
 
-for i in classes:
-    xmin,xmax,ymin,ymax = boxes[i][0],boxes[i][1],boxes[i][2],boxes[i][3]
-    plt.figure(figsize=(8,10))
-    plt.label('label' + labels[i])
-    plt.imshow(images[i])
-    plt.gca().add_patch(plt.Rectangle((xmin,ymin)k,xmax-xmin,ymax-ymin,color='yellow',fill=False,linewwidth=2))
+    # Resize the frame for YOLOv8 input size (640x640)
+    img = cv2.resize(frame, (640, 640))
 
+    # Step 8: Run YOLO object detection on the captured frame using the trained model
+    results = trained_model(img)
+
+    # Step 9: Extract bounding boxes and labels from the results
+    boxes = results[0].boxes
+    im_result = results[0].plot()  # Plotting the results on the frame
+
+    # Step 10: Display the resulting image with detections
+    plt.imshow(im_result)
+    plt.axis('off')  # Turn off axis
     plt.show()
 
-#model
-model = YOLO('yolov8m.pt')
-result  = results[0]
-box = result.boxes[0]
+    # Step 11: Print the FPS (Frames Per Second)
+    fps = 1 / (time.time() - start_time)
+    print(f"FPS: {fps:.2f}")
 
-for result in results :
-    boxes = result.boxes
-    masks = result.masks
-    probs = result.prob
-    
-cords = box.xyxy[0].tolist()
-class_id = box.cls[0].item()
-conf = box.conf[0].item()
-print("Object type:", class_id)
-print("Coordinates:", cords)
-print("Probability:", conf)
+    # Step 12: Optionally: Break the loop after a certain condition (e.g., a key press)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-for box in result.boxes:
-    class_id = result.names[box.cls[0].item()]
-    cords = box.xyxy[0].tolist()
-    cords = [round(x) for x in cords]
-    conf = round(box.conf[0].item(), 2)
-    print("Object type:", class_id)
-    print("Coordinates:", cords)
-    print("Probability:", conf)
-    print("---")
-
-results1 = model.predict(source="/kaggle/input/self-driving-cars/images/1478020211690815798.jpg",
-              save=True, conf=0.2,iou=0.5)
-
-Results = results1[0]
-
-# Plotting results
-plot = results1[0].plot()
-plot = cv2.cvtColor(plot, cv2.COLOR_BGR2RGB)
-display(Image.fromarray(plot))
-
-def calculate_iou(box1, box2):
-   
-    x1, y1, x2, y2 = box1
-    x1_p, y1_p, x2_p, y2_p = box2
-    
-    
-    xi1 = max(x1, x1_p)
-    yi1 = max(y1, y1_p)
-    xi2 = min(x2, x2_p)
-    yi2 = min(y2, y2_p)
-    
-   
-    inter_area = max(0, xi2 - xi1) * max(0, yi2 - yi1)
-
-     box1_area = (x2 - x1) * (y2 - y1)
-    box2_area = (x2_p - x1_p) * (y2_p - y1_p)
-    
-    
-    union_area = box1_area + box2_area - inter_area
-    iou = inter_area / union_area if union_area > 0 else 0
-    return iou
-
-image_name = "1478020211690815798.jpg"
-ground_truth = df[df['frame'] == image_name].reset_index(drop=True)
-
-
-gt_boxes = ground_truth[['xmin', 'ymin', 'xmax', 'ymax']].values.tolist()
-gt_labels = ground_truth['class_id'].map(labels).tolist() 
-
-
-pred_boxes = [box.xyxy[0].tolist() for box in results1[0].boxes]
-pred_labels = [results1[0].names[box.cls[0].item()] for box in results1[0].boxes]
-pred_confs = [box.conf[0].item() for box in results1[0].boxes]
-
-
-iou_threshold = 0.5  
-tp, fp, fn = 0, 0, len(gt_boxes)
-
-matched_gt = set() 
-
-
-for pred_box, pred_label, pred_conf in zip(pred_boxes, pred_labels, pred_confs):
-    best_iou = 0
-    best_gt_idx = -1
-    
-   
-    for gt_idx, (gt_box, gt_label) in enumerate(zip(gt_boxes, gt_labels)):
-        if gt_idx in matched_gt:
-            continue
-        if pred_label != gt_label:
-            continue
-        iou = calculate_iou(pred_box, gt_box)
-        if iou > best_iou:
-            best_iou = iou
-            best_gt_idx = gt_idx
-    
-    
-    if best_iou >= iou_threshold:
-        tp += 1
-        fn -= 1  
-        matched_gt.add(best_gt_idx)
-
-    else:
-        fp += 1
-
-
-precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-
-
-print(f"\nPerformance Metrics for {image_name}:")
-print(f"True Positives (TP): {tp}")
-print(f"False Positives (FP): {fp}")
-print(f"False Negatives (FN): {fn}")
-print(f"Precision: {precision:.2f}")
-print(f"Recall: {recall:.2f}")
-
-
-map_score = precision * recall 
-print(f"mAP@0.5 (approximated): {map_score:.2f}")
+# Step 13: Release the camera and clean up
+picam2.stop()
+cv2.destroyAllWindows()
