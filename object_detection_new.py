@@ -11,8 +11,8 @@ from picamera2 import Picamera2
 from ultralytics import YOLO
 
 # === CONFIGURATION ===
-csv_file = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)/labels_train.csv'
-images_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)'  # Path to your images directory
+csv_file = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/labels_train.csv (1)/labels_train.csv (2)-(1)/labels_train.csv'
+images_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/images/train/images'  # Path to your images directory
 output_dir = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT'
 epochs = 50
 batch_size = 8
@@ -102,7 +102,7 @@ model.train(data=yaml_path, epochs=epochs, imgsz=imgsz, batch=batch_size)
 print("✅ Training complete.")
 
 # === STEP 3: Real-time detection from PiCamera ===
-best_model_path = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT'
+best_model_path = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT/data.yaml'
 print(f"🎯 Loading trained model from: {best_model_path}")
 trained_model = YOLO(best_model_path)
 
