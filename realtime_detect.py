@@ -1,32 +1,36 @@
-import time
 import cv2
-from picamera2 import Picamera2
+import time
 from ultralytics import YOLO
+from picamera2 import Picamera2
 
-model_path = '/home/hottiiiieeee/Desktop/object detction/OBJECT-DETECTION-main/OUTPUT/runs/detect/train/weights/best.pt'
-imgsz = 640
+model_path = '/home/hottiiiieeee/Desktop/object detection/OBJECT-DETECTION-main/object_detection_new.py'
+conf_threshold = 0.25
+iou_threshold = 0.5
+imgsz = 320
 
-# === STEP 1: Load trained model ===
-print(f"🎯 Loading trained model from: {model_path}")
-model = YOLO(model_path)
+def setup_camera(resolution=(640, 480)):
+    cam = Picamera2()
+    config = cam.create_preview_configuration(main={"size": resolution})
+    cam.configure(config)
+    cam.start()
+    time.sleep(2)
+    return cam
 
-print("🎥 Starting PiCamera detection... Press 'q' to quit.")
-picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-picam2.start()
-time.sleep(2)
+def real_time_detection(model_path, conf=0.25, iou=0.5, imgsz=320):
+    model = YOLO(model_path,task='detect')
+    cam = setup_camera()
+    try:
+        while True:
+            frame = cam.capture_array()
+            results = model.predict(source=frame, imgsz=imgsz, conf=conf, iou=iou, device='cpu', verbose=False)
+            annotated = results[0].plot()
+            cv2.imshow("YOLOv8 Real-Time Detection", annotated)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    finally:
+        cam.stop()
+        cv2.destroyAllWindows()
 
-try:
-    while True:
-        start_time = time.time()
-        frame = picam2.capture_array()
-        results = model.predict(source=frame, imgsz=imgsz, conf=0.25)
-        im_result = results[0].plot()
-        cv2.imshow("YOLOv8 Detection", im_result)
-        print(f"FPS: {1.0 / (time.time() - start_time):.2f}")
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-finally:
-    picam2.stop()
-    cv2.destroyAllWindows()
-    print("🛑 Detection stopped.")
+if __name__ == '__main__':
+    real_time_detection(model_path, conf_threshold, iou_threshold, imgsz)
+
