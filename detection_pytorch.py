@@ -7,7 +7,7 @@ from ultralytics import YOLO
 from PIL import Image, ImageDraw
 
 csv_file = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/labels_train.csv'  #/home/hottiiiieeee/Desktop/archive (2)/labels_train.csv' for using on pi
-images_dir = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/images '   #'/home/hottiiiieeee/Desktop/archive (2)/images' for pi 
+images_dir = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/images'   #'/home/hottiiiieeee/Desktop/archive (2)/images' for pi 
 sample_image = os.path.join(images_dir, 'test.jpg')
 
  
