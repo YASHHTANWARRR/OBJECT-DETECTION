@@ -6,10 +6,13 @@ from sklearn.utils import shuffle
 from ultralytics import YOLO
 from PIL import Image, ImageDraw
 
-csv_file = '/home/hottiiiieeee/Desktop/archive (2)/labels_train.csv'
-images_dir = '/home/hottiiiieeee/Desktop/archive (2)/images'
+csv_file = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/labels_train.csv'  #/home/hottiiiieeee/Desktop/archive (2)/labels_train.csv' for using on pi
+images_dir = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/images '   #'/home/hottiiiieeee/Desktop/archive (2)/images' for pi 
 sample_image = os.path.join(images_dir, '1478019952686311006.jpg')
-best_model = 'yolov8m.pt'
+
+ 
+#  only while using yolo for object detection
+best_model = 'yolov8m.pt' 
 
 def load_and_shuffle_labels(csv_path):
     df = pd.read_csv(csv_path)
@@ -34,7 +37,7 @@ def visualize_first_instances(df, images_dir, class_map, max_per_class=1):
         plt.axis('off')
         plt.show()
 
-def predict_and_display(model_path, image_path, imgsz=320, conf=0.25, iou=0.5):
+def predict_and_display(model_path, image_path, imgsz=160, conf=0.25, iou=0.5):
     model = YOLO(model_path)
     results = model.predict(source=image_path, imgsz=imgsz, conf=conf, iou=iou)
     for result in results:
