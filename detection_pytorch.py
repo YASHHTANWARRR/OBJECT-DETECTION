@@ -8,9 +8,12 @@ from PIL import Image, ImageDraw
 
 csv_file = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/labels_train.csv'  #/home/hottiiiieeee/Desktop/archive (2)/labels_train.csv' for using on pi
 images_dir = '/Users/birba/OneDrive/Documents/OBJECT-DETECTION/images'   #'/home/hottiiiieeee/Desktop/archive (2)/images' for pi 
+
+# test images 
 # sample_image = os.path.join(images_dir, 'test.jpg')
 # sample_image = os.path.join(images_dir, '1478020224691768528.jpg')
-sample_image = os.path.join(images_dir, '1478020265197595672.jpg')
+# sample_image = os.path.join(images_dir, '1478020265197595672.jpg')
+# sample_image = os.path.join(images_dir, '1478020352201615863.jpg')
 
 #  only while using yolo for object detection
 best_model = 'yolov8m.pt' 
