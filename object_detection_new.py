@@ -9,7 +9,7 @@ from PIL import Image
 
 csv_file = '/home/hottiiiieeee/Desktop/archive (2)/labels_train.csv'
 images_dir = '/home/hottiiiieeee/Desktop/archive (2)/images'
-sample_image = os.path.join(images_dir, '1478019952686311006.jpg')
+sample_image = os.path.join(images_dir, 'test2.jpg')
 best_model = 'yolov8m.pt'
 
 def load_and_shuffle_labels(csv_path):
