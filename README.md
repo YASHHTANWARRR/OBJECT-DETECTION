@@ -1,91 +1,125 @@
-🧠 Diabetic Retinopathy Detection (PyTorch + EfficientNet)
+# 🧠 Object Detection System (YOLOv8 + OpenCV)
 
-This project builds a deep learning model to detect diabetic retinopathy severity from retinal images using PyTorch and EfficientNet.
+This project implements a real-time **object detection system** using **YOLOv8** and **OpenCV** to detect and classify multiple objects from images, videos, or webcam streams.
 
-🎬 Demo
+---
 
-👉 Add your model output / predictions here:
+## 🚀 Features
 
-![Demo](demo.png)
-🚀 Features
-📊 Multi-class classification (5 severity levels)
-⚖️ Handles class imbalance using Weighted Random Sampling
-🧠 Uses EfficientNet-B0 (pretrained)
-⚡ GPU acceleration with CUDA
-📈 Evaluation using confusion matrix & classification report
-📂 Dataset
-📌 Source
+* 🎯 Real-time object detection
+* 🎥 Supports webcam, images, and video input
+* 🧠 Uses **YOLOv8 (pretrained model)**
+* ⚡ Fast inference with GPU support (CUDA)
+* 🖼️ Bounding boxes with labels & confidence scores
+* 📊 Detects multiple objects in a single frame
 
-Kaggle Diabetic Retinopathy Detection (resized version)
+---
 
-📁 Structure
-archive/
-│── trainLabels.csv
-│── resized_train/
-    └── resized_train/
-        ├── 10003_left.jpeg
-        ├── 10003_right.jpeg
-        └── ...
-📌 Notes
-Images stored in a single folder
-Labels provided via CSV (trainLabels.csv)
-🏷️ Classes
-Label	Description
-0	No DR
-1	Mild
-2	Moderate
-3	Severe
-4	Proliferative DR
-⚙️ Installation
-🧪 Step 1: Create Environment
-conda create -n rapids_clean python=3.10 -y
-conda activate rapids_clean
-📦 Step 2: Install Dependencies
-pip install torch torchvision pandas numpy scikit-learn tqdm pillow
-🧠 Model Architecture
-📌 Backbone
+## 📂 Project Structure
 
-EfficientNet-B0 (pretrained on ImageNet)
+```
+OBJECT-DETECTION/
+│── image_detect/
+│── yolo_service.py
+│── yolov8n.pt
+│── README.md
+```
 
-🔧 Modification
-from torchvision.models import efficientnet_b0
-import torch.nn as nn
+---
 
-model = efficientnet_b0(pretrained=True)
-model.classifier[1] = nn.Linear(model.classifier[1].in_features, 5)
-⚖️ Handling Class Imbalance
-✅ Used
-WeightedRandomSampler
-❌ Not Used
-Weighted Loss (to avoid over-correction)
-🏃 Training
-▶️ Run Training
-python train_diabetes.py
-⚙️ Default Settings
-Batch size: 8
-Epochs: 15
-Optimizer: Adam
-Learning rate: 0.0003
-📊 Evaluation
-📈 Outputs
-Confusion Matrix
-Classification Report (Precision, Recall, F1-score)
-Accuracy
-🧠 Key Learnings
-Medical datasets are highly imbalanced
-Combining sampler + weighted loss can harm training
-EfficientNet gives strong performance with low VRAM
-⚠️ Hardware Requirements
-GPU recommended (4GB+ VRAM)
-EfficientNet-B0 works on low-memory GPUs
-EfficientNet-B4 requires 6–8GB VRAM
-📈 Future Improvements
-🔥 Grad-CAM visualization
-🔥 EfficientNet-B4 / B5
-🔥 Ensemble models
-🔥 Advanced preprocessing (CLAHE)
-🤝 Contributing
+## 🏷️ Classes
+
+The YOLOv8 model is trained on the **COCO dataset**, which supports detection of 80+ object categories such as:
+
+| Category | Examples              |
+| -------- | --------------------- |
+| People   | Person                |
+| Vehicles | Car, Bus, Bike        |
+| Animals  | Dog, Cat              |
+| Objects  | Bottle, Chair, Laptop |
+
+---
+
+## ⚙️ Installation
+
+### 1. Create Environment
+
+```bash
+conda create -n object_detect python=3.10 -y
+conda activate object_detect
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install ultralytics opencv-python numpy
+```
+
+---
+
+## 🧠 Model Architecture
+
+* Model: **YOLOv8 Nano (yolov8n)**
+* Pretrained on: **COCO dataset**
+* Single-stage detector for fast real-time performance
+
+```python
+from ultralytics import YOLO
+
+model = YOLO("yolov8n.pt")
+```
+
+---
+
+## 🏃 Running the Project
+
+```bash
+python yolo_service.py
+```
+
+---
+
+## 📊 Output
+
+* 📦 Bounding boxes around detected objects
+* 🏷️ Object labels
+* 📈 Confidence scores
+* 🎥 Real-time detection window
+
+---
+
+## 🧠 Key Learnings
+
+* YOLO enables **real-time detection in a single forward pass**
+* Pretrained models remove need for large datasets
+* GPU acceleration significantly improves performance
+* Computer vision pipelines require efficient frame processing
+
+---
+
+## ⚠️ Hardware Requirements
+
+* CPU supported (slower performance)
+* GPU recommended (CUDA enabled)
+* Minimum 4GB RAM
+
+---
+
+## 📈 Future Improvements
+
+* 🔥 Custom dataset training
+* 🔥 Object tracking (DeepSORT)
+* 🔥 Web app deployment (Flask / Streamlit)
+* 🔥 Model optimization (TensorRT / ONNX)
+
+---
+
+## 🤝 Contributing
 
 Pull requests are welcome. For major changes, open an issue first.
 
-📜 License
+---
+
+## 📜 License
+
+This project is for educational and research purposes.
